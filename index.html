@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>LOVE, MANU</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background-color: #b30000;
+      background-size: cover;
+      position: relative;
+      margin: 0;
+    }
+    h1 {
+      margin-bottom: 20px;
+      color: white;
+      text-shadow: 2px 2px 4px #000;
+    }
+    .board-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 40px;
+    }
+    .side-text {
+      color: white;
+      font-size: 14px;
+      writing-mode: vertical-rl;
+      text-align: center;
+      font-weight: bold;
+      transform: rotate(180deg);
+    }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-template-rows: repeat(3, 100px);
+      gap: 5px;
+      background-color: white;
+      padding: 10px;
+      border-radius: 20px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    }
+    .cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #ffe6e6;
+      border: 2px solid #ccc;
+      font-size: 40px;
+      cursor: pointer;
+      border-radius: 10px;
+    }
+    .cell.taken {
+      pointer-events: none;
+    }
+    #win-message {
+      position: absolute;
+      top: 10%;
+      font-size: 48px;
+      color: white;
+      text-shadow: 2px 2px 4px #000;
+      display: none;
+      text-align: center;
+      animation: fadeIn 2s ease-in-out forwards;
+    }
+    #win-image {
+      position: absolute;
+      top: 30%;
+      width: 300px;
+      display: none;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      animation: fadeIn 2s ease-in-out forwards;
+    }
+    #reset-button, #try-again-button {
+      position: absolute;
+      top: 80%;
+      display: none;
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: white;
+      color: red;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      animation: fadeIn 2s ease-in-out forwards;
+    }
+    #try-again-button {
+      background-color: #ffe6e6;
+      color: #b30000;
+      top: 85%;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+  <h1>LOVE, MANU.</h1>
+  <div class="board-container">
+    <div class="side-text">LOVE, MANU.</div>
+    <div class="board" id="board"></div>
+    <div class="side-text">LOVE, MANU.</div>
+  </div>
+  <div id="win-message">YOU HAVE WON MY HEART</div>
+  <img id="win-image" src="https://i.imgur.com/BUeEema.jpeg" alt="Zwycięstwo">
+  <button id="reset-button" onclick="resetGame()">Zagraj ponownie</button>
+  <button id="try-again-button" onclick="resetGame()">Spróbuj ponownie</button>
+
+  <script>
+    const board = document.getElementById('board');
+    const winMessage = document.getElementById('win-message');
+    const winImage = document.getElementById('win-image');
+    const resetButton = document.getElementById('reset-button');
+    const tryAgainButton = document.getElementById('try-again-button');
+    let cells = [];
+
+    function createBoard() {
+      board.innerHTML = '';
+      cells = [];
+      for (let i = 0; i < 9; i++) {
+        const cell = document.createElement('div');
+        cell.classList.add('cell');
+        cell.addEventListener('click', () => playerMove(i));
+        board.appendChild(cell);
+        cells.push(cell);
+      }
+    }
+
+    function playerMove(index) {
+      if (cells[index].textContent !== '') return;
+      cells[index].textContent = '❤';
+      cells[index].classList.add('taken');
+      if (checkWin('❤')) {
+        setTimeout(() => {
+          winMessage.style.display = 'block';
+          winImage.style.display = 'block';
+          resetButton.style.display = 'block';
+        }, 100);
+        return;
+      }
+      aiMove();
+    }
+
+    function aiMove() {
+      const empty = cells.map((c, i) => c.textContent === '' ? i : null).filter(i => i !== null);
+      if (empty.length === 0) {
+        tryAgainButton.style.display = 'block';
+        return;
+      }
+      const move = empty[Math.floor(Math.random() * empty.length)];
+      cells[move].textContent = '✖';
+      cells[move].classList.add('taken');
+      if (checkWin('✖')) {
+        setTimeout(() => {
+          alert('Przegrałeś!');
+          tryAgainButton.style.display = 'block';
+        }, 100);
+      } else if (cells.every(c => c.textContent !== '')) {
+        tryAgainButton.style.display = 'block';
+      }
+    }
+
+    function checkWin(symbol) {
+      const wins = [
+        [0,1,2], [3,4,5], [6,7,8],
+        [0,3,6], [1,4,7], [2,5,8],
+        [0,4,8], [2,4,6]
+      ];
+      return wins.some(pattern => pattern.every(i => cells[i].textContent === symbol));
+    }
+
+    function resetGame() {
+      winMessage.style.display = 'none';
+      winImage.style.display = 'none';
+      resetButton.style.display = 'none';
+      tryAgainButton.style.display = 'none';
+      createBoard();
+    }
+
+    createBoard();
+  </script>
+</body>
+</html>
